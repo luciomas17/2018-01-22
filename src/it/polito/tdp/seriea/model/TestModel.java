@@ -8,7 +8,7 @@ public class TestModel {
 		
 		Team t = new Team("Juventus");
 		
-		System.out.println(model.printSeasonsByTeam(t));
+		System.out.println(model.getSeasonsByTeam(t));
 	}
 
 }

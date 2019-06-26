@@ -1,5 +1,6 @@
 package it.polito.tdp.seriea.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,24 +22,24 @@ public class Model {
 		return dao.listTeams();
 	}
 	
-	public String printSeasonsByTeam(Team team) {
-		String result = "";
+	public List<SeasonByTeam> getSeasonsByTeam(Team team) {
+		List<SeasonByTeam> result = new ArrayList<>();
 		List<Match> matches = dao.listMatchesByTeam(team, seasonsIdMap, teamsIdMap);
 		
-		String partial = "";
 		int points = 0;
+		Season season = null;
 		
 		for(int i = 0; i < matches.size(); i ++) {
 			Match m = matches.get(i);
 			
 			if(i == 0) 
-				partial += "Stagione " + m.getSeason().getDescription() + ", ";
+				season = m.getSeason();
 			
 			else if(!m.getSeason().equals(matches.get(i-1).getSeason()) || i == matches.size()-1) {
-				partial += points + " punti";
-				result += partial + "\n";
+				SeasonByTeam temp = new SeasonByTeam(team, season, points);
+				result.add(temp);
 				
-				partial = "Stagione " + m.getSeason().getDescription() + ", ";
+				season = m.getSeason();
 				points = 0;
 			}
 			

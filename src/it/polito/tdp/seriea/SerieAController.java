@@ -5,9 +5,11 @@
 package it.polito.tdp.seriea;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.seriea.model.Model;
+import it.polito.tdp.seriea.model.SeasonByTeam;
 import it.polito.tdp.seriea.model.Team;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -51,7 +53,9 @@ public class SerieAController {
     	
     	Team team = boxSquadra.getSelectionModel().getSelectedItem();
     	
-    	txtResult.appendText(model.printSeasonsByTeam(team));
+    	List<SeasonByTeam> seasons = model.getSeasonsByTeam(team);
+    	for(SeasonByTeam s : seasons)
+    		txtResult.appendText(s + "\n");
     }
 
     @FXML
