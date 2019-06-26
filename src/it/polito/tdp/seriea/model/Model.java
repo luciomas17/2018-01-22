@@ -1,6 +1,7 @@
 package it.polito.tdp.seriea.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ public class Model {
 	private Graph<Season, DefaultWeightedEdge> graph;
 	private Map<Integer, Season> seasonsIdMap;
 	private Map<String, Team> teamsIdMap;
+	private List<SeasonByTeam> bestPath;
 	
 	public Model() {
 		this.dao = new SerieADAO();
@@ -82,6 +84,93 @@ public class Model {
 			
 			return String.format("Stagione %s, differenza pesi: %d\n", bestSeason, bestWeightsDifference);
 		}
+	}
+	
+	public List<SeasonByTeam> findBestPath(Team team) {
+		List<Season> seasons = new ArrayList<>(this.graph.vertexSet());
+		Collections.sort(seasons);
+		
+		this.bestPath = new ArrayList<>();
+		
+		for(Season s : seasons) {
+			List<SeasonByTeam> partial = new ArrayList<>();
+			partial.add(getSeasonByTeamFromSeason(team, s));
+			recursive(team, seasons, partial, 0);
+		}
+		
+		return bestPath;
+	}
+
+	private void recursive(Team team, List<Season> seasons, List<SeasonByTeam> partial, int level) {
+		if(partial.size() > bestPath.size())
+			bestPath = new ArrayList<>(partial);
+		
+		for(Season s : seasons) {
+			SeasonByTeam sbt = getSeasonByTeamFromSeason(team, s);
+			
+			if(!partial.contains(sbt)) {			
+				SeasonByTeam prev = partial.get(partial.size()-1);
+				
+				if(isConsecutive(sbt, prev) && isBetter(sbt, prev)) {
+					partial.add(sbt);
+					recursive(team, seasons, partial, level+1);
+					partial.remove(sbt);
+				}
+			}
+		}
+	}
+
+	private boolean isBetter(SeasonByTeam sbt, SeasonByTeam prev) {
+		List<Season> successors = Graphs.successorListOf(this.graph, prev.getSeason());
+		
+		if(successors.size() == 0)
+			return false;
+		
+		if(successors.contains(sbt.getSeason()))
+			return true;
+		else
+			return false;
+	}
+
+	private boolean isConsecutive(SeasonByTeam sbt, SeasonByTeam prev) {
+		List<SeasonByTeam> seasonsInSerieAByTeam = getSeasonsByTeam(prev.getTeam());
+		List<Season> seasonsInSerieA = new ArrayList<>();
+		for(SeasonByTeam s : seasonsInSerieAByTeam)
+			seasonsInSerieA.add(s.getSeason());
+		Collections.sort(seasonsInSerieA);
+		
+		if(seasonsInSerieA.size() == 0)
+			return false;
+		
+		int index = -1;
+		for(int i = 0; i < seasonsInSerieA.size(); i ++) {
+			if(seasonsInSerieA.get(i) == prev.getSeason()) {
+				index = i;
+				break;
+			}
+		}
+		
+		if(index == seasonsInSerieA.size()-1)
+			return false;
+		
+		if(sbt.getSeason() == seasonsInSerieA.get(index+1))
+			return true;
+		else
+			return false;
+	}
+
+	private SeasonByTeam getSeasonByTeamFromSeason(Team team, Season s) {
+		List<SeasonByTeam> seasons = getSeasonsByTeam(team);
+		SeasonByTeam temp = null;
+		
+		for(SeasonByTeam season : seasons) {
+			if(season.getSeason().equals(s)) {
+				temp = season;
+				break;
+			}
+		}
+			
+		return temp;
 	}
 
 	public List<Team> getTeamsList() {

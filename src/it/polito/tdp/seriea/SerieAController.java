@@ -74,7 +74,19 @@ public class SerieAController {
 
     @FXML
     void doTrovaCamminoVirtuoso(ActionEvent event) {
-
+    	txtResult.clear();
+    	
+    	if(boxSquadra.getSelectionModel().isEmpty()) {
+    		txtResult.appendText("Selezionare una squadra.");
+    		return;
+    	}
+    	
+    	Team team = boxSquadra.getSelectionModel().getSelectedItem();
+    	
+    	txtResult.appendText("Miglior cammino virtuoso:\n");
+    	List<SeasonByTeam> bestPath = model.findBestPath(team);
+    	for(SeasonByTeam sbt : bestPath)
+    		txtResult.appendText(sbt + "\n");
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
