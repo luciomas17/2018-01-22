@@ -3,12 +3,19 @@ package it.polito.tdp.seriea.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import it.polito.tdp.seriea.db.SerieADAO;
 
 public class Model {
 	
 	private SerieADAO dao;
+	private Graph<Season, DefaultWeightedEdge> graph;
 	private Map<Integer, Season> seasonsIdMap;
 	private Map<String, Team> teamsIdMap;
 	
@@ -16,6 +23,65 @@ public class Model {
 		this.dao = new SerieADAO();
 		this.seasonsIdMap = dao.getSeasonsMap();
 		this.teamsIdMap = dao.getTeamsMap();
+	}
+	
+	private void createGraph(Team team) {
+		this.graph = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+		
+		List<SeasonByTeam> seasons = getSeasonsByTeam(team);
+		
+		if(seasons.size() == 1)
+			this.graph.addVertex(seasons.get(0).getSeason());
+		
+		else {
+			for(SeasonByTeam s1 : seasons) {
+				for(SeasonByTeam s2 : seasons) {
+					if(s1.getPoints() < s2.getPoints() && !s1.equals(s2)) {
+						int weight = s2.getPoints() - s1.getPoints();
+						Graphs.addEdgeWithVertices(this.graph, s1.getSeason(), s2.getSeason(), weight);
+					}
+				}
+			}
+		}
+		
+		System.out.println("Grafo creato.");
+		System.out.println(String.format("%d vertici e %d archi.", this.graph.vertexSet().size(), this.graph.edgeSet().size()));
+	}
+	
+	public String findBestSeason(Team team) {
+		createGraph(team);
+		
+		List<Season> vertexes = new ArrayList<>(this.graph.vertexSet());
+		
+		if(vertexes.size() == 1)
+			return String.format("Stagione %s, differenza pesi: %d\n", vertexes.get(0).getDescription(), 0);
+		
+		else {
+			Season bestSeason = null;
+			int bestWeightsDifference = 0;
+			
+			for(Season v : vertexes) {
+				Set<DefaultWeightedEdge> incomingEdges = this.graph.incomingEdgesOf(v);
+				Set<DefaultWeightedEdge> outgoingEdges = this.graph.outgoingEdgesOf(v);
+				
+				int incomingWeights = 0;
+				for(DefaultWeightedEdge e : incomingEdges)
+					incomingWeights += this.graph.getEdgeWeight(e);
+				
+				int outgoingWeights = 0;
+				for(DefaultWeightedEdge e : outgoingEdges)
+					outgoingWeights += this.graph.getEdgeWeight(e);
+				
+				int temp = incomingWeights - outgoingWeights;
+				
+				if(temp > bestWeightsDifference) {
+					bestSeason = v;
+					bestWeightsDifference = temp;
+				}
+			}
+			
+			return String.format("Stagione %s, differenza pesi: %d\n", bestSeason, bestWeightsDifference);
+		}
 	}
 
 	public List<Team> getTeamsList() {

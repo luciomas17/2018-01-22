@@ -60,7 +60,16 @@ public class SerieAController {
 
     @FXML
     void doTrovaAnnataOro(ActionEvent event) {
-
+    	txtResult.clear();
+    	
+    	if(boxSquadra.getSelectionModel().isEmpty()) {
+    		txtResult.appendText("Selezionare una squadra.");
+    		return;
+    	}
+    	
+    	Team team = boxSquadra.getSelectionModel().getSelectedItem();
+    	
+    	txtResult.appendText(model.findBestSeason(team));
     }
 
     @FXML

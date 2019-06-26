@@ -9,6 +9,9 @@ public class TestModel {
 		Team t = new Team("Juventus");
 		
 		System.out.println(model.getSeasonsByTeam(t));
+		
+		System.out.println("");
+		System.out.println(model.findBestSeason(t));
 	}
 
 }
