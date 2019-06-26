@@ -6,6 +6,9 @@ package it.polito.tdp.seriea;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.seriea.model.Model;
+import it.polito.tdp.seriea.model.Team;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -13,6 +16,8 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 
 public class SerieAController {
+	
+	Model model;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -21,7 +26,7 @@ public class SerieAController {
     private URL location;
 
     @FXML // fx:id="boxSquadra"
-    private ChoiceBox<?> boxSquadra; // Value injected by FXMLLoader
+    private ChoiceBox<Team> boxSquadra; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnSelezionaSquadra"
     private Button btnSelezionaSquadra; // Value injected by FXMLLoader
@@ -37,7 +42,16 @@ public class SerieAController {
 
     @FXML
     void doSelezionaSquadra(ActionEvent event) {
-
+    	txtResult.clear();
+    	
+    	if(boxSquadra.getSelectionModel().isEmpty()) {
+    		txtResult.appendText("Selezionare una squadra.");
+    		return;
+    	}
+    	
+    	Team team = boxSquadra.getSelectionModel().getSelectedItem();
+    	
+    	txtResult.appendText(model.printSeasonsByTeam(team));
     }
 
     @FXML
@@ -59,4 +73,14 @@ public class SerieAController {
         assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'SerieA.fxml'.";
 
     }
+    
+    public void setModel(Model model) {
+    	this.model = model;
+    	
+    	addItemsToBoxSquadra();
+    }
+
+	private void addItemsToBoxSquadra() {
+		this.boxSquadra.getItems().addAll(model.getTeamsList());
+	}
 }

@@ -40,6 +40,14 @@ public class Match {
 		this.ftag = ftag;
 		this.ftr = ftr;
 	}
+	
+	public Match(Season season, Team homeTeam, Team awayTeam, String ftr) {
+		this.season = season;
+		this.homeTeam = homeTeam;
+		this.awayTeam = awayTeam;
+		this.ftr = ftr;
+	}
+	
 
 	/**
 	 * @return the id
